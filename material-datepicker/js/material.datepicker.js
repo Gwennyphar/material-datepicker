@@ -1,18 +1,18 @@
-$.fn.datepicker = function (options) {
+$.fn.datepicker = function (options) {  
 	var pickerHtml =
    	[
 	   	'<div class="material-datepicker hide" tabindex="0">',
-	    	'<section class="top-day">',
-	    		'<span data-bind="text: day"></span>',
+	    	'<section class="top-day" id="top-day">',
+	    		'<span id="day" data-bind="text: day"></span>',
 	    	'</section>',
-	    	'<section class="middle-date">',
-	    		'<div class="month" data-bind="text: shortMonth"></div>',
-	    		'<div class="date" data-bind="text: date"></div>',
-	    		'<div class="year" data-bind="text: year"></div>',
+	    	'<section class="middle-date" id="middle-date">',
+	    		'<div class="month" id="month" data-bind="text: shortMonth"></div>',
+	    		'<div class="date" id="date" data-bind="text: date"></div>',
+	    		'<div class="year" id="year" data-bind="text: year"></div>',
 	    	'</section>',
 	    	'<section class="calendar no-select">',
-	    		'<a data-bind="click: prevMonth" class="control prev"> &#xf053 </a>',
-	    		'<a data-bind="click: nextMonth" class="control next"> &#xf054 </a>',
+	    		'<a id="prev" data-bind="click: prevMonth" class="control prev"> &#xf053 </a>',
+	    		'<a id="next" data-bind="click: nextMonth" class="control next"> &#xf054 </a>',
 	    		'<div class="title" data-bind="text: viewingMonthName() + \' \' + viewingYear()"></div>',
 	    		'<div class="headings" data-bind="foreach: daysShort">',
 		    		'<span data-bind="text: $data" class="day heading"></span>',
@@ -60,14 +60,14 @@ $.fn.datepicker = function (options) {
 
 	// setup option values
 	var defaults = {
-		format: "DD/MM/YYYY",
-		colour: "#009688"
+		format: "DD.MM.YYYY",
+		colour: "#2e57a6"
 	};
 	var options = $.extend(defaults, options);
 
 	function AppViewModel(field, picker, options) {
 		var self = this;
-		self.daysShort = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+		self.daysShort = ['S', 'M', 'D', 'M', 'D', 'F', 'S'];
 		self.field = field;
 		self.options = options;
 		self.today = ko.observable( moment() );
@@ -77,9 +77,9 @@ $.fn.datepicker = function (options) {
 	    self.monthStruct = ko.observableArray();
 		self.viewingMonthName = ko.computed(function(){
 			var months = [
-				'January', 'February', 'March', 'April', 'May',
-				'June', 'July', 'August', 'September', 'October',
-				'November', 'December'
+				'Januar', 'Februar', 'März', 'April', 'Mai',
+				'Juni', 'Juli', 'August', 'September', 'Oktober',
+				'November', 'Dezember'
 			];
 	    	return months[ self.viewingMonth() - 1 ];
 	    });
@@ -90,7 +90,7 @@ $.fn.datepicker = function (options) {
 
 		self.processDate = function(day) {
 			if (day) {
-				var date = moment(self.viewingYear() + '-' + self.viewingMonth() + '-' + day);
+                var date = moment(self.viewingYear() + '-' + ((self.viewingMonth()<10) ? '0'+self.viewingMonth() : self.viewingMonth()) + '-' + ((day<10) ? '0'+day : day));
 				self.datePickerValue(date);
 				var year = self.viewingYear();
 				var month = self.viewingMonth();
@@ -113,7 +113,7 @@ $.fn.datepicker = function (options) {
 	    	self.monthStruct.removeAll();
 	    	var month = self.viewingMonth();
 	    	var year = self.viewingYear();
-	    	var startOfMonth = moment(year + '-' + month + '-01').startOf('month');
+            var startOfMonth = moment(year + '-' + ((month<10) ? '0'+month : month) + '-01').startOf('month');
 	    	var startDay = startOfMonth.format('dddd');
 	    	var startingPoint = startOfMonth.day();
 	    	var daysInMonth = startOfMonth.endOf('month').date();
@@ -218,4 +218,44 @@ $.fn.datepicker = function (options) {
 	window.viewModel = viewModel;
 	ko.applyBindings(viewModel, picker[0]);
 	return this;
-}
+};
+
+loadDatepicker();
+function loadDatepicker () {
+
+  if( $('#sDatepicker').length ) {
+    var options = {};
+    $('#sDatepicker').datepicker(options);
+
+
+    $(".select-field").change(function() {
+      var orderDate = $("input[name='sDatepicker']").val();
+      // Wert in localStorage setzen
+      localStorage.setItem('fulldate',orderDate);
+    });
+
+    
+    $(".buybox--button").click(function() {
+      var orderDate = $("input[name='sDatepicker']").val();
+      // Wert aus sDatepicker in sOrderBasketField setzen
+      $('#sOrderBasketField').val(orderDate);
+    }); 
+    
+    color_top_day = $('.calendar-conf').attr("data-top-day");
+    $(".top-day").css("background-color", color_top_day);
+    color_middle_date = $('.calendar-conf').attr("data-color-middle-date");
+    $(".middle-date").css("background-color", color_middle_date);
+    $(".prev").css("color", color_middle_date);
+    $(".next").css("color", color_middle_date);
+
+    $(".day.heading").css("color", color_middle_date);
+    $(".month").css("color", color_middle_date);
+    $(".year").css("color", color_middle_date);
+
+    textcolor = $('.calendar-conf').attr("data-textcolor");
+    $("#day").css("color", textcolor);
+    $("#month").css("color", textcolor);
+    $("#year").css("color", textcolor);
+  }
+};
+   
